@@ -1,0 +1,26 @@
+name: Build
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: Build Mod
+        run: |
+          # Скачиваем официальный шаблон Forge 1.16.5
+          wget https://github.com -O forge.zip
+          unzip forge.zip
+          cd MinecraftForge-1.16.x
+          # Делаем скрипт сборки исполняемым
+          chmod +x gradlew
+          # Запускаем компиляцию (это займет 5-10 минут)
+          ./gradlew build
+      - name: Upload Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyESPMod
+          path: MinecraftForge-1.16.x/build/libs/*.jar
