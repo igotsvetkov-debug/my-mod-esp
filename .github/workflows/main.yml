@@ -13,11 +13,12 @@ jobs:
           distribution: 'temurin'
       - name: Create Project Structure
         run: |
-          # Создаем build.gradle с правильным репозиторием
+          # Создаем build.gradle с ПРАВИЛЬНЫМИ ссылками
           cat <<EOF > build.gradle
           buildscript {
               repositories {
                   maven { url = 'https://minecraftforge.net' }
+                  maven { url = 'https://spongepowered.org' }
                   mavenCentral()
               }
               dependencies {
@@ -32,9 +33,13 @@ jobs:
           minecraft {
               mappings channel: 'official', version: '1.16.5'
           }
+          repositories { 
+              maven { url = 'https://minecraftforge.net' }
+              mavenCentral() 
+          }
           EOF
           
-          # Создаем файлы мода
+          # Создаем необходимые папки и файлы мода
           mkdir -p src/main/java/com/example/esp
           cat <<EOF > src/main/java/com/example/esp/EspMod.java
           package com.example.esp;
@@ -42,7 +47,6 @@ jobs:
           @Mod("myespmod")
           public class EspMod {}
           EOF
-
           mkdir -p src/main/resources/META-INF
           cat <<EOF > src/main/resources/META-INF/mods.toml
           modLoader="javafml"
@@ -53,11 +57,12 @@ jobs:
           version="1.0"
           displayName="My ESP Mod"
           EOF
-          
-          # Устанавливаем конкретную версию Gradle (7.6), которая понимает Forge 1.16.5
-          gradle wrapper --gradle-version 7.6
+      - name: Setup Gradle 7.6
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 7.6
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+        run: gradle build --no-daemon
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
