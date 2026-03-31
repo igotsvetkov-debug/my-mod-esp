@@ -13,16 +13,15 @@ jobs:
           distribution: 'temurin'
       - name: Create Project Structure
         run: |
-          # Создаем build.gradle с ПРАВИЛЬНЫМИ ссылками
+          # Создаем build.gradle БЕЗ лишних репозиториев
           cat <<EOF > build.gradle
           buildscript {
               repositories {
                   maven { url = 'https://minecraftforge.net' }
-                  maven { url = 'https://spongepowered.org' }
                   mavenCentral()
               }
               dependencies {
-                  classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+'
+                  classpath 'net.minecraftforge.gradle:ForgeGradle:5.1.+'
               }
           }
           apply plugin: 'net.minecraftforge.gradle'
@@ -33,13 +32,9 @@ jobs:
           minecraft {
               mappings channel: 'official', version: '1.16.5'
           }
-          repositories { 
-              maven { url = 'https://minecraftforge.net' }
-              mavenCentral() 
-          }
           EOF
           
-          # Создаем необходимые папки и файлы мода
+          # Файлы мода (необходимый минимум)
           mkdir -p src/main/java/com/example/esp
           cat <<EOF > src/main/java/com/example/esp/EspMod.java
           package com.example.esp;
@@ -68,3 +63,4 @@ jobs:
         with:
           name: MyESPMod-1.16.5
           path: build/libs/*.jar
+
