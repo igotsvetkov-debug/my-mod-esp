@@ -11,16 +11,36 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
-      - name: Setup Forge MDK
+      - name: Create Project Structure
         run: |
-          # Скачиваем MDK 1.16.5 по прямой ссылке
-          wget -q https://minecraftforge.net -O mdk.zip
-          unzip -q mdk.zip
-          chmod +x gradlew
+          # Создаем файл настроек сборки
+          cat <<EOF > build.gradle
+          buildscript {
+              repositories {
+                  maven { url = 'https://minecraftforge.net' }
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+              }
+          }
+          apply plugin: 'net.minecraftforge.gradle'
+          group = 'com.example'
+          version = '1.0'
+          archivesBaseName = 'my-esp-mod'
+          java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+          minecraft {
+              mappings channel: 'official', version: '1.16.5'
+          }
+          repositories { mavenCentral() }
+          EOF
+          
+          # Генерируем обертку Gradle
+          gradle wrapper
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MyMod-1.16.5
+          name: MyESPMod-1.16.5
           path: build/libs/*.jar
