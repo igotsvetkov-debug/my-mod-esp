@@ -13,7 +13,7 @@ jobs:
           distribution: 'temurin'
       - name: Create Project Structure
         run: |
-          # Создаем build.gradle
+          # Создаем build.gradle с правильным репозиторием
           cat <<EOF > build.gradle
           buildscript {
               repositories {
@@ -21,22 +21,20 @@ jobs:
                   mavenCentral()
               }
               dependencies {
-                  classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+                  classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+'
               }
           }
           apply plugin: 'net.minecraftforge.gradle'
           group = 'com.example'
           version = '1.0'
           archivesBaseName = 'my-esp-mod'
-          // Указываем, что компилируем под Java 8 для Minecraft 1.16.5
           java.toolchain.languageVersion = JavaLanguageVersion.of(8)
           minecraft {
               mappings channel: 'official', version: '1.16.5'
           }
-          repositories { mavenCentral() }
           EOF
           
-          # Создаем пустой файл мода, чтобы сборка не была пустой
+          # Создаем файлы мода
           mkdir -p src/main/java/com/example/esp
           cat <<EOF > src/main/java/com/example/esp/EspMod.java
           package com.example.esp;
@@ -45,7 +43,6 @@ jobs:
           public class EspMod {}
           EOF
 
-          # Создаем файл настроек мода (обязательно для 1.16.5)
           mkdir -p src/main/resources/META-INF
           cat <<EOF > src/main/resources/META-INF/mods.toml
           modLoader="javafml"
@@ -57,7 +54,8 @@ jobs:
           displayName="My ESP Mod"
           EOF
           
-          gradle wrapper
+          # Устанавливаем конкретную версию Gradle (7.6), которая понимает Forge 1.16.5
+          gradle wrapper --gradle-version 7.6
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
       - name: Upload Artifact
