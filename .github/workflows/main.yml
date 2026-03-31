@@ -6,14 +6,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up JDK 8
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '8'
+          java-version: '17'
           distribution: 'temurin'
       - name: Create Project Structure
         run: |
-          # Создаем файл настроек сборки
+          # Создаем build.gradle
           cat <<EOF > build.gradle
           buildscript {
               repositories {
@@ -28,6 +28,7 @@ jobs:
           group = 'com.example'
           version = '1.0'
           archivesBaseName = 'my-esp-mod'
+          // Указываем, что компилируем под Java 8 для Minecraft 1.16.5
           java.toolchain.languageVersion = JavaLanguageVersion.of(8)
           minecraft {
               mappings channel: 'official', version: '1.16.5'
@@ -35,7 +36,27 @@ jobs:
           repositories { mavenCentral() }
           EOF
           
-          # Генерируем обертку Gradle
+          # Создаем пустой файл мода, чтобы сборка не была пустой
+          mkdir -p src/main/java/com/example/esp
+          cat <<EOF > src/main/java/com/example/esp/EspMod.java
+          package com.example.esp;
+          import net.minecraftforge.fml.common.Mod;
+          @Mod("myespmod")
+          public class EspMod {}
+          EOF
+
+          # Создаем файл настроек мода (обязательно для 1.16.5)
+          mkdir -p src/main/resources/META-INF
+          cat <<EOF > src/main/resources/META-INF/mods.toml
+          modLoader="javafml"
+          loaderVersion="[36,)"
+          license="MIT"
+          [[mods]]
+          modId="myespmod"
+          version="1.0"
+          displayName="My ESP Mod"
+          EOF
+          
           gradle wrapper
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
